@@ -9,6 +9,7 @@ import NavBar from './NavBar';
 import Welcome from './Welcome';
 import 'bootstrap/dist/css/bootstrap.css';
 import Calendar from './Calendar';
+import Todo from './Todo';
 
 type AppProps= {
   pca: IPublicClientApplication
@@ -31,6 +32,10 @@ export default function App({ pca }: AppProps) {
                   render={(props) =>
                     <Calendar {...props} />
                   } />
+                  <Route exact path="/todo"
+                    render={(props) =>
+                      <Todo {...props} />
+                    } />
             </Container>
           </div>
         </Router>

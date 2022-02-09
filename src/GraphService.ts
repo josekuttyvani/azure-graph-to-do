@@ -84,3 +84,44 @@ export async function getUserWeekCalendar(authProvider: AuthCodeMSALBrowserAuthe
     return response.value;
   }
 }
+
+export async function getTodoList(authProvider: AuthCodeMSALBrowserAuthenticationProvider,
+                                          timeZone: string): Promise<Event[]> {
+  ensureClient(authProvider);
+
+  // Generate startDateTime and endDateTime query params
+  // to display a 7-day window
+  const now = new Date();
+  const startDateTime = zonedTimeToUtc(startOfWeek(now), timeZone).toISOString();
+  const endDateTime = zonedTimeToUtc(endOfWeek(now), timeZone).toISOString();
+
+
+  var response: PageCollection = await graphClient!
+    .api('/me/todo/lists')
+    .top(25)
+    .get();
+
+  if (response["@odata.nextLink"]) {
+    // Presence of the nextLink property indicates more results are available
+    // Use a page iterator to get all results
+    var events: Event[] = [];
+
+    // Must include the time zone header in page
+    // requests too
+    var options: GraphRequestOptions = {
+      headers: { 'Prefer': `outlook.timezone="${timeZone}"` }
+    };
+
+    var pageIterator = new PageIterator(graphClient!, response, (event) => {
+      events.push(event);
+      return true;
+    }, options);
+
+    await pageIterator.iterate();
+
+    return events;
+  } else {
+
+    return response.value;
+  }
+}
